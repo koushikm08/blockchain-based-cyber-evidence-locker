@@ -1,0 +1,168 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "1. Start MongoDB",
+            "type": "shell",
+            "command": "net start MongoDB",
+            "windows": {
+                "command": "net start MongoDB"
+            },
+            "linux": {
+                "command": "sudo systemctl start mongodb"
+            },
+            "osx": {
+                "command": "brew services start mongodb-community"
+            },
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            }
+        },
+        {
+            "label": "2. Install IPFS (Windows - Chocolatey)",
+            "type": "shell",
+            "windows": {
+                "command": "choco install ipfs -y"
+            },
+            "osx": {
+                "command": "brew install ipfs"
+            },
+            "linux": {
+                "command": "wget https://dist.ipfs.tech/kubo/v0.24.0/kubo_v0.24.0_linux-amd64.tar.gz && tar -xvzf kubo_v0.24.0_linux-amd64.tar.gz && cd kubo && sudo bash install.sh"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "3. Initialize IPFS (First Time Only)",
+            "type": "shell",
+            "command": "ipfs init",
+            "problemMatcher": []
+        },
+        {
+            "label": "4. Start IPFS Daemon",
+            "type": "shell",
+            "command": "ipfs daemon",
+            "isBackground": true,
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            }
+        },
+        {
+            "label": "5. Start Ganache",
+            "type": "shell",
+            "windows": {
+                "command": "cd backend/blockchain && start /B npx ganache --port 8545 --quiet"
+            },
+            "osx": {
+                "command": "cd backend/blockchain && nohup npx ganache --port 8545 --quiet > ganache.log 2>&1 &"
+            },
+            "linux": {
+                "command": "cd backend/blockchain && nohup npx ganache --port 8545 --quiet > ganache.log 2>&1 &"
+            },
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            }
+        },
+        {
+            "label": "6. Deploy Smart Contract",
+            "type": "shell",
+            "command": "cd backend/blockchain && node scripts/deploy_manual.js",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            },
+            "dependsOn": [
+                "5. Start Ganache"
+            ]
+        },
+        {
+            "label": "7. Start Backend Server",
+            "type": "shell",
+            "command": "cd backend && node server.js",
+            "isBackground": true,
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            },
+            "dependsOn": [
+                "1. Start MongoDB",
+                "4. Start IPFS Daemon",
+                "6. Deploy Smart Contract"
+            ]
+        },
+        {
+            "label": "8. Start Frontend",
+            "type": "shell",
+            "command": "npm run dev",
+            "isBackground": true,
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            }
+        },
+        {
+            "label": "🚀 Start All Services (After IPFS Install)",
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "1. Start MongoDB",
+                "4. Start IPFS Daemon",
+                "5. Start Ganache",
+                "6. Deploy Smart Contract",
+                "7. Start Backend Server",
+                "8. Start Frontend"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "📦 Install All Dependencies",
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "Install Backend Dependencies",
+                "Install Blockchain Dependencies",
+                "Install Frontend Dependencies"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "Install Backend Dependencies",
+            "type": "shell",
+            "command": "cd backend && npm install",
+            "problemMatcher": []
+        },
+        {
+            "label": "Install Blockchain Dependencies",
+            "type": "shell",
+            "command": "cd backend/blockchain && npm install",
+            "problemMatcher": []
+        },
+        {
+            "label": "Install Frontend Dependencies",
+            "type": "shell",
+            "command": "npm install",
+            "problemMatcher": []
+        },
+        {
+            "label": "🛑 Stop All Services (Windows)",
+            "type": "shell",
+            "windows": {
+                "command": "taskkill /F /IM node.exe & taskkill /F /IM ipfs.exe"
+            },
+            "osx": {
+                "command": "pkill -f ganache; pkill -f 'node server.js'; pkill ipfs"
+            },
+            "linux": {
+                "command": "pkill -f ganache; pkill -f 'node server.js'; pkill ipfs"
+            },
+            "problemMatcher": []
+        }
+    ]
+}

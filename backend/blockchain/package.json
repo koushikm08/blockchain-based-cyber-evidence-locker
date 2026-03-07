@@ -1,0 +1,16 @@
+{
+  "name": "blockchain-manual",
+  "version": "1.0.0",
+  "description": "Manual deployment scripts",
+  "main": "scripts/deploy_manual.js",
+  "scripts": {
+    "deploy": "node scripts/deploy_manual.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "ethers": "^6.10.0",
+    "ganache": "^7.9.2",
+    "solc": "^0.8.28"
+  }
+}
