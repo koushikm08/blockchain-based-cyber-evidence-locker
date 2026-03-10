@@ -20,8 +20,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// Enable CORS
-const cors = require("cors");
+
 
 app.use(
   cors({
