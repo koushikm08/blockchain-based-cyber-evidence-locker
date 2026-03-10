@@ -2,6 +2,8 @@ const fs = require('fs');
 const solc = require('solc');
 const { ethers } = require('ethers');
 
+require("dotenv").config();
+
 async function main() {
     console.log("Compiling contract...");
     const contractPath = 'contracts/EvidenceLocker.sol';
@@ -46,8 +48,8 @@ async function main() {
     console.log("Contract compiled successfully.");
 
     // Connect to local node
-    const provider = new ethers.JsonRpcProvider("http://127.0.0.1:8545");
-    const signer = await provider.getSigner();
+    const provider = new ethers.JsonRpcProvider(process.env.RPC_URL);
+const signer = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
 
     console.log("Deploying contract with account:", await signer.getAddress());
 

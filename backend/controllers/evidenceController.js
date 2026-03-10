@@ -1,6 +1,9 @@
 const crypto = require('crypto');
 const Evidence = require('../models/Evidence');
 
+const axios = require('axios');
+const FormData = require('form-data');
+
 const { getContract } = require('../config/contractConfig');
 const { ethers } = require('ethers');
 
@@ -46,50 +49,42 @@ exports.uploadEvidence = async (req, res, next) => {
         const fileBuffer = req.file.buffer;
         const fileHash = calculateFileHash(fileBuffer);
 
-        // IPFS Upload
         let ipfsCid;
+
         try {
-            console.log('📤 Starting IPFS upload...');
-            let ipfsModule;
-            try {
-                ipfsModule = await import('ipfs-http-client');
-            } catch (importErr) {
-                console.error('Failed to import ipfs-http-client:', importErr.message);
-                throw new Error('IPFS client library not available');
-            }
+            console.log("Pinata API Key:", process.env.PINATA_API_KEY);
+console.log("Pinata Secret:", process.env.PINATA_SECRET_API_KEY);
+            console.log("📤 Uploading file to Pinata...");
 
-            const { create } = ipfsModule;
-            ipfs = create({ url: process.env.IPFS_URL || 'http://127.0.0.1:5001' });
-            const result = await ipfs.add(fileBuffer);
-            ipfsCid = result.cid.toString();
+            const formData = new FormData();
+            formData.append("file", fileBuffer, {
+                filename: req.file.originalname
+            });
 
-            console.log('✓ File uploaded to IPFS:', ipfsCid);
-
-            // Add to MFS for visibility in IPFS Desktop
-            try {
-                await ipfs.files.mkdir('/evidence', { parents: true });
-
-                const safeFileName = req.file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
-                const mfsPath = `/evidence/${Date.now()}_${safeFileName}`;
-
-                try {
-                    await ipfs.files.stat(mfsPath);
-                    console.warn(`File already exists in MFS at ${mfsPath}`);
-                } catch {
-                    await ipfs.files.cp(`/ipfs/${ipfsCid}`, mfsPath);
-                    console.log(`✓ File added to MFS at ${mfsPath}`);
+            const response = await axios.post(
+                "https://api.pinata.cloud/pinning/pinFileToIPFS",
+                formData,
+                {
+                    maxBodyLength: "Infinity",
+                    headers: {
+  ...formData.getHeaders(),
+  pinata_api_key: process.env.PINATA_API_KEY,
+  pinata_secret_api_key: process.env.PINATA_SECRET_API_KEY
+}
                 }
-            } catch (mfsError) {
-                console.warn('⚠ MFS operation failed (non-fatal):', mfsError.message);
-            }
+            );
+
+            ipfsCid = response.data.IpfsHash;
+
+            console.log("✓ File uploaded to IPFS via Pinata:", ipfsCid);
+
         } catch (err) {
-            console.error('❌ IPFS upload error:', err.message);
-            console.error('Error stack:', err.stack);
+            console.error("❌ Pinata upload error:", err.message);
             responseSent = true;
             res.setHeader('Content-Type', 'application/json');
             return res.status(503).json({
                 success: false,
-                message: 'IPFS upload failed: ' + err.message,
+                message: "IPFS upload failed",
                 error: err.message
             });
         }
@@ -105,7 +100,8 @@ exports.uploadEvidence = async (req, res, next) => {
             provider = new ethers.JsonRpcProvider(process.env.RPC_URL || 'http://127.0.0.1:8545');
             console.log('✓ Connected to blockchain provider');
             
-            const signer = await provider.getSigner();
+            const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
+            const signer = wallet;
             console.log('✓ Got signer:', signer.address);
             
             const contract = getContract(signer);
