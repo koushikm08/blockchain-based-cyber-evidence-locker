@@ -126,13 +126,13 @@ B-CEL is a professional, academic-grade frontend application for secure digital 
 All pages are prepared for backend API calls to a Node.js server. Expected endpoints:
 
 ### Authentication
-- `POST /api/auth/register` - User registration
-- `POST /api/auth/signin` - User login
+- `POST `${process.env.NEXT_PUBLIC_API_URL}/api/auth/register` - User registration
+- `POST `${process.env.NEXT_PUBLIC_API_URL}/api/auth/signin` - User login
 
 ### Evidence Management
-- `POST /api/evidence/upload` - Upload evidence file
-- `GET /api/evidence/verify/:evidenceId` - Verify evidence
-- `GET /api/evidence/list` - Get user's evidence list
+- `POST `${process.env.NEXT_PUBLIC_API_URL}/api/evidence/upload` - Upload evidence file
+- `GET `${process.env.NEXT_PUBLIC_API_URL}/api/evidence/verify/:evidenceId` - Verify evidence
+- `GET `${process.env.NEXT_PUBLIC_API_URL}/api/evidence/list` - Get user's evidence list
 
 ### Response Format Expected
 
@@ -228,7 +228,7 @@ npm run dev
 
 ### Environment Variables (`.env.local`)
 ```
-NEXT_PUBLIC_API_URL=http://localhost:3001/api
+NEXT_PUBLIC_API_URL=http://localhost:3001`${process.env.NEXT_PUBLIC_API_URL}/api
 NEXT_PUBLIC_APP_NAME=B-CEL
 ```
 

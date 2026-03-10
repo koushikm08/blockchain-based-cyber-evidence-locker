@@ -3,7 +3,7 @@ const http = require('http');
 // Test if backend is running on port 5002
 function testBackendHealth() {
   return new Promise((resolve) => {
-    const req = http.get('http://localhost:5002/api/health', (res) => {
+    const req = http.get('http://localhost:5002`${process.env.NEXT_PUBLIC_API_URL}/api/health', (res) => {
       let data = '';
       res.on('data', (chunk) => {
         data += chunk;
@@ -39,7 +39,7 @@ function testSignup() {
     const options = {
       hostname: 'localhost',
       port: 5002,
-      path: '/api/auth/register',
+      path: `${process.env.NEXT_PUBLIC_API_URL}/api/auth/register',
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -80,7 +80,7 @@ async function testLogin(email, password) {
     const options = {
       hostname: 'localhost',
       port: 5002,
-      path: '/api/auth/login',
+      path: `${process.env.NEXT_PUBLIC_API_URL}/api/auth/login',
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

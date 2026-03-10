@@ -8,7 +8,7 @@ This document provides the expected API endpoints and response formats for the B
 
 ### Environment Variables
 ```env
-NEXT_PUBLIC_API_URL=http://localhost:3001/api
+NEXT_PUBLIC_API_URL=http://localhost:3001`${process.env.NEXT_PUBLIC_API_URL}/api
 NEXT_PUBLIC_BLOCKCHAIN_RPC=https://eth-mainnet.g.alchemy.com/v2/YOUR_KEY
 NEXT_PUBLIC_IPFS_API=https://ipfs.io
 IPFS_API_KEY=your_ipfs_key (backend only)
@@ -21,7 +21,7 @@ JWT_SECRET=your_jwt_secret_key
 ## 🔐 Authentication Endpoints
 
 ### 1. Register User
-**Endpoint:** `POST /api/auth/register`
+**Endpoint:** `POST `${process.env.NEXT_PUBLIC_API_URL}/api/auth/register`
 
 **Request:**
 ```json
@@ -61,7 +61,7 @@ JWT_SECRET=your_jwt_secret_key
 ---
 
 ### 2. Sign In User
-**Endpoint:** `POST /api/auth/signin`
+**Endpoint:** `POST `${process.env.NEXT_PUBLIC_API_URL}/api/auth/signin`
 
 **Request:**
 ```json
@@ -99,7 +99,7 @@ JWT_SECRET=your_jwt_secret_key
 ## 📤 Evidence Upload Endpoint
 
 ### Upload Evidence File
-**Endpoint:** `POST /api/evidence/upload`
+**Endpoint:** `POST `${process.env.NEXT_PUBLIC_API_URL}/api/evidence/upload`
 
 **Headers:**
 ```
@@ -145,7 +145,7 @@ Content-Type: multipart/form-data
 ## ✅ Evidence Verification Endpoint
 
 ### Verify Evidence
-**Endpoint:** `GET /api/evidence/verify/:evidenceId`
+**Endpoint:** `GET `${process.env.NEXT_PUBLIC_API_URL}/api/evidence/verify/:evidenceId`
 
 **Headers:**
 ```
@@ -204,7 +204,7 @@ Authorization: Bearer {token}
 ## 📊 Evidence List Endpoint
 
 ### Get User's Evidence List
-**Endpoint:** `GET /api/evidence/list`
+**Endpoint:** `GET `${process.env.NEXT_PUBLIC_API_URL}/api/evidence/list`
 
 **Headers:**
 ```
@@ -289,7 +289,7 @@ All endpoints should return errors in this format:
 ```
 
 ### Token Refresh Endpoint (Recommended)
-**Endpoint:** `POST /api/auth/refresh`
+**Endpoint:** `POST `${process.env.NEXT_PUBLIC_API_URL}/api/auth/refresh`
 
 **Headers:**
 ```
@@ -408,7 +408,7 @@ CREATE TABLE evidence (
 
 **Register:**
 ```bash
-curl -X POST http://localhost:3001/api/auth/register \
+curl -X POST http://localhost:3001`${process.env.NEXT_PUBLIC_API_URL}/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{
     "fullName": "John Doe",
@@ -421,14 +421,14 @@ curl -X POST http://localhost:3001/api/auth/register \
 
 **Upload:**
 ```bash
-curl -X POST http://localhost:3001/api/evidence/upload \
+curl -X POST http://localhost:3001`${process.env.NEXT_PUBLIC_API_URL}/api/evidence/upload \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -F "file=@/path/to/evidence.jpg"
 ```
 
 **Verify:**
 ```bash
-curl -X GET http://localhost:3001/api/evidence/verify/EV-2024-000001 \
+curl -X GET http://localhost:3001`${process.env.NEXT_PUBLIC_API_URL}/api/evidence/verify/EV-2024-000001 \
   -H "Authorization: Bearer YOUR_TOKEN"
 ```
 

@@ -39,7 +39,7 @@ export default function AdminDashboardPage() {
     const fetchUsers = async () => {
         try {
             setLoading(true)
-            const response = await fetch('/api/admin/users', {
+            const response = await fetch('`${process.env.NEXT_PUBLIC_API_URL}/api/admin/users', {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`,
                 },
@@ -63,7 +63,7 @@ export default function AdminDashboardPage() {
         if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) return
 
         try {
-            const response = await fetch(`/api/admin/users/${userId}`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/users/${userId}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -83,7 +83,7 @@ export default function AdminDashboardPage() {
 
     const handleRoleChange = async (userId: string, newRole: string) => {
         try {
-            const response = await fetch(`/api/admin/users/${userId}/role`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/users/${userId}/role`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',

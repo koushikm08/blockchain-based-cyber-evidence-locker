@@ -13,7 +13,7 @@ const calculateFileHash = (buffer) => {
 };
 
 // @desc    Upload evidence
-// @route   POST /api/evidence/upload
+// @route   POST `${process.env.NEXT_PUBLIC_API_URL}/api/evidence/upload
 // @access  Private
 exports.uploadEvidence = async (req, res, next) => {
     let responseSent = false;
@@ -62,7 +62,7 @@ console.log("Pinata Secret:", process.env.PINATA_SECRET_API_KEY);
             });
 
             const response = await axios.post(
-                "https://api.pinata.cloud/pinning/pinFileToIPFS",
+                "https:/`${process.env.NEXT_PUBLIC_API_URL}/api.pinata.cloud/pinning/pinFileToIPFS",
                 formData,
                 {
                     maxBodyLength: "Infinity",
@@ -245,7 +245,7 @@ console.log("Pinata Secret:", process.env.PINATA_SECRET_API_KEY);
 };
 
 // @desc    Verify evidence
-// @route   GET /api/evidence/verify/:evidenceId
+// @route   GET `${process.env.NEXT_PUBLIC_API_URL}/api/evidence/verify/:evidenceId
 // @access  Private
 exports.verifyEvidence = async (req, res, next) => {
     let ipfs = null;
@@ -400,7 +400,7 @@ exports.verifyEvidence = async (req, res, next) => {
 };
 
 // @desc    Get evidence list
-// @route   GET /api/evidence/list
+// @route   GET `${process.env.NEXT_PUBLIC_API_URL}/api/evidence/list
 // @access  Private
 exports.getEvidenceList = async (req, res, next) => {
     try {
@@ -460,7 +460,7 @@ exports.getEvidenceList = async (req, res, next) => {
 };
 
 // @desc    Get single evidence
-// @route   GET /api/evidence/:id
+// @route   GET `${process.env.NEXT_PUBLIC_API_URL}/api/evidence/:id
 // @access  Private
 exports.getEvidence = async (req, res, next) => {
     try {
@@ -511,7 +511,7 @@ exports.getEvidence = async (req, res, next) => {
 };
 
 // @desc    Get dashboard statistics
-// @route   GET /api/evidence/stats
+// @route   GET `${process.env.NEXT_PUBLIC_API_URL}/api/evidence/stats
 // @access  Private
 exports.getStats = async (req, res, next) => {
     try {
@@ -548,7 +548,7 @@ exports.getStats = async (req, res, next) => {
 
 
 // @desc    Download evidence file
-// @route   GET /api/evidence/download/:id
+// @route   GET `${process.env.NEXT_PUBLIC_API_URL}/api/evidence/download/:id
 // @access  Private (Admin, Law Enforcement only)
 exports.downloadEvidence = async (req, res, next) => {
     let ipfs = null;
@@ -642,7 +642,7 @@ exports.downloadEvidence = async (req, res, next) => {
 };
 
 // @desc    Simulate tampering for demo
-// @route   POST /api/evidence/tamper/:id
+// @route   POST `${process.env.NEXT_PUBLIC_API_URL}/api/evidence/tamper/:id
 // @access  Private
 exports.tamperEvidence = async (req, res, next) => {
     try {

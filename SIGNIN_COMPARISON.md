@@ -85,7 +85,7 @@ const [formData, setFormData] = useState({
 
 **BEFORE:**
 ```tsx
-const response = await fetch('http://localhost:5002/api/auth/login', {
+const response = await fetch('http://localhost:5002`${process.env.NEXT_PUBLIC_API_URL}/api/auth/login', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
@@ -102,7 +102,7 @@ setSelectedRole(data.user.role)  // ❌ Overwriting selection
 
 **AFTER:**
 ```tsx
-const response = await fetch('http://localhost:5002/api/auth/login', {
+const response = await fetch('http://localhost:5002`${process.env.NEXT_PUBLIC_API_URL}/api/auth/login', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
@@ -147,7 +147,7 @@ if (userRole === 'admin') {
 
 ## API Endpoint Details
 
-### POST /api/auth/login
+### POST `${process.env.NEXT_PUBLIC_API_URL}/api/auth/login
 
 **Request:**
 ```json
@@ -290,7 +290,7 @@ Before submission:
 ## Backend (No Changes)
 
 The backend auth controller already implements the correct flow:
-- `/api/auth/login` accepts only email & password
+- ``${process.env.NEXT_PUBLIC_API_URL}/api/auth/login` accepts only email & password
 - Returns user object with database role
 - No role parameter validation needed
 

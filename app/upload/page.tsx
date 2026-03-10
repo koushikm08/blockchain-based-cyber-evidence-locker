@@ -75,7 +75,7 @@ export default function UploadPage() {
       const formData = new FormData()
       formData.append('file', selectedFile)
 
-      const response = await fetch('/api/evidence/upload', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/evidence/upload`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,

@@ -282,7 +282,7 @@ function Start-IpfsDaemon {
             Start-Sleep -Seconds 5
             
             # Verify daemon is running
-            $response = Invoke-WebRequest -Uri "http://127.0.0.1:5001/api/v0/version" -UseBasicParsing -ErrorAction SilentlyContinue
+            $response = Invoke-WebRequest -Uri "http://127.0.0.1:5001`${process.env.NEXT_PUBLIC_API_URL}/api/v0/version" -UseBasicParsing -ErrorAction SilentlyContinue
             
             if ($response.StatusCode -eq 200) {
                 Write-Success "IPFS daemon is running!"
@@ -317,7 +317,7 @@ function Test-IpfsInstallation {
     # Test 2: Daemon status
     Write-Info "`n[TEST 2/3] Checking daemon status..."
     try {
-        $response = Invoke-WebRequest -Uri "http://127.0.0.1:5001/api/v0/version" -UseBasicParsing
+        $response = Invoke-WebRequest -Uri "http://127.0.0.1:5001`${process.env.NEXT_PUBLIC_API_URL}/api/v0/version" -UseBasicParsing
         Write-Success "Daemon is responding!"
     } catch {
         throw "Daemon is not responding"

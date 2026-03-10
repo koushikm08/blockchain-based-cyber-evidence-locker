@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BASE_URL="http://localhost:5002/api"
+BASE_URL="http://localhost:5002`${process.env.NEXT_PUBLIC_API_URL}/api"
 echo "🧪 Testing Cyber Evidence Locker API"
 echo "====================================="
 echo ""

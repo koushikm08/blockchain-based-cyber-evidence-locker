@@ -60,7 +60,7 @@ The scripts automatically handle:
 - [Setup Guide](./SETUP.md) - Complete installation and configuration
 - [Windows Setup](./WINDOWS_SETUP.md) - Automated IPFS setup for Windows
 - [IPFS Installation](./INSTALL_IPFS.md) - IPFS installation for all platforms
-- [API Documentation](./API.md) - REST API endpoints (coming soon)
+- [API Documentation](.`${process.env.NEXT_PUBLIC_API_URL}/api.md) - REST API endpoints (coming soon)
 - [Smart Contract](./backend/blockchain/contracts/EvidenceLocker.sol) - Solidity contract
 
 

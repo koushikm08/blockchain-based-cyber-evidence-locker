@@ -78,7 +78,7 @@ export default function VerifyPage() {
     }
 
     try {
-      const response = await fetch(`/api/evidence/verify/${id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/evidence/verify/${id}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -112,7 +112,7 @@ export default function VerifyPage() {
 
     try {
       setLoading(true);
-      const response = await fetch(`/api/evidence/tamper/${evidence.id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/evidence/tamper/${evidence.id}`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -124,7 +124,7 @@ export default function VerifyPage() {
         // We'll reset error and reload
         setError('');
         // Trigger verification again
-        const verifyRes = await fetch(`/api/evidence/verify/${evidence.evidenceId}`, {
+        const verifyRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/evidence/verify/${evidence.evidenceId}`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -166,7 +166,7 @@ export default function VerifyPage() {
     
     try {
       setDownloading(true)
-      const response = await fetch(`/api/evidence/download/${evidence.id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/evidence/download/${evidence.id}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,

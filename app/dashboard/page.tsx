@@ -51,7 +51,7 @@ export default function DashboardPage() {
   const fetchEvidence = async () => {
     try {
       setLoading(true)
-      const response = await fetch('/api/evidence/list', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/evidence/list`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,

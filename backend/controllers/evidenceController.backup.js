@@ -10,7 +10,7 @@ const calculateFileHash = (buffer) => {
 };
 
 // @desc    Upload evidence
-// @route   POST /api/evidence/upload
+// @route   POST `${process.env.NEXT_PUBLIC_API_URL}/api/evidence/upload
 // @access  Private
 exports.uploadEvidence = async (req, res, next) => {
     try {
@@ -134,7 +134,7 @@ exports.uploadEvidence = async (req, res, next) => {
 };
 
 // @desc    Verify evidence
-// @route   GET /api/evidence/verify/:evidenceId
+// @route   GET `${process.env.NEXT_PUBLIC_API_URL}/api/evidence/verify/:evidenceId
 // @access  Private
 exports.verifyEvidence = async (req, res, next) => {
     try {
@@ -246,7 +246,7 @@ exports.verifyEvidence = async (req, res, next) => {
 };
 
 // @desc    Get evidence list
-// @route   GET /api/evidence/list
+// @route   GET `${process.env.NEXT_PUBLIC_API_URL}/api/evidence/list
 // @access  Private
 exports.getEvidenceList = async (req, res, next) => {
     try {
@@ -294,7 +294,7 @@ exports.getEvidenceList = async (req, res, next) => {
 };
 
 // @desc    Get single evidence
-// @route   GET /api/evidence/:id
+// @route   GET `${process.env.NEXT_PUBLIC_API_URL}/api/evidence/:id
 // @access  Private
 exports.getEvidence = async (req, res, next) => {
     try {
@@ -339,7 +339,7 @@ exports.getEvidence = async (req, res, next) => {
 };
 
 // @desc    Get dashboard statistics
-// @route   GET /api/evidence/stats
+// @route   GET `${process.env.NEXT_PUBLIC_API_URL}/api/evidence/stats
 // @access  Private
 exports.getStats = async (req, res, next) => {
     try {

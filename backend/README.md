@@ -50,7 +50,7 @@ npm start
 
 ### Authentication
 
-**Register** - `POST /api/auth/register`
+**Register** - `POST `${process.env.NEXT_PUBLIC_API_URL}/api/auth/register`
 ```json
 {
   "fullName": "John Doe",
@@ -61,7 +61,7 @@ npm start
 }
 ```
 
-**Sign In** - `POST /api/auth/signin`
+**Sign In** - `POST `${process.env.NEXT_PUBLIC_API_URL}/api/auth/signin`
 ```json
 {
   "email": "john@agency.gov",
@@ -69,22 +69,22 @@ npm start
 }
 ```
 
-**Get Profile** - `GET /api/auth/me` (Protected)
+**Get Profile** - `GET `${process.env.NEXT_PUBLIC_API_URL}/api/auth/me` (Protected)
 
 ### Evidence Management
 
-**Upload Evidence** - `POST /api/evidence/upload` (Protected)
+**Upload Evidence** - `POST `${process.env.NEXT_PUBLIC_API_URL}/api/evidence/upload` (Protected)
 - Form data with file field: `file`
 - Returns: evidenceId, hash, IPFS CID, blockchain TX
 
-**Verify Evidence** - `GET /api/evidence/verify/:evidenceId` (Protected)
+**Verify Evidence** - `GET `${process.env.NEXT_PUBLIC_API_URL}/api/evidence/verify/:evidenceId` (Protected)
 
-**List Evidence** - `GET /api/evidence/list` (Protected)
+**List Evidence** - `GET `${process.env.NEXT_PUBLIC_API_URL}/api/evidence/list` (Protected)
 - Query params: `?page=1&limit=20&status=all`
 
-**Get Evidence** - `GET /api/evidence/:id` (Protected)
+**Get Evidence** - `GET `${process.env.NEXT_PUBLIC_API_URL}/api/evidence/:id` (Protected)
 
-**Get Statistics** - `GET /api/evidence/stats` (Protected)
+**Get Statistics** - `GET `${process.env.NEXT_PUBLIC_API_URL}/api/evidence/stats` (Protected)
 
 ## Test Accounts
 

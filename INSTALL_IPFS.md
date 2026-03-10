@@ -22,7 +22,7 @@ The daemon will run on `http://127.0.0.1:5001`
 ipfs version
 
 # Check if daemon is running
-curl http://127.0.0.1:5001/api/v0/version
+curl http://127.0.0.1:5001`${process.env.NEXT_PUBLIC_API_URL}/api/v0/version
 ```
 
 ---

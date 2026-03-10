@@ -1,7 +1,7 @@
 const User = require('../models/User');
 
 // @desc    Get all users
-// @route   GET /api/admin/users
+// @route   GET `${process.env.NEXT_PUBLIC_API_URL}/api/admin/users
 // @access  Private/Admin
 exports.getUsers = async (req, res, next) => {
     try {
@@ -18,7 +18,7 @@ exports.getUsers = async (req, res, next) => {
 };
 
 // @desc    Update user role
-// @route   PUT /api/admin/users/:id/role
+// @route   PUT `${process.env.NEXT_PUBLIC_API_URL}/api/admin/users/:id/role
 // @access  Private/Admin
 exports.updateUserRole = async (req, res, next) => {
     try {
@@ -55,7 +55,7 @@ exports.updateUserRole = async (req, res, next) => {
 };
 
 // @desc    Delete user
-// @route   DELETE /api/admin/users/:id
+// @route   DELETE `${process.env.NEXT_PUBLIC_API_URL}/api/admin/users/:id
 // @access  Private/Admin
 exports.deleteUser = async (req, res, next) => {
     try {

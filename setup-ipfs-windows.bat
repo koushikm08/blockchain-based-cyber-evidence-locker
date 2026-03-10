@@ -240,7 +240,7 @@ REM Wait for daemon to start
 timeout /t 5 /nobreak >nul
 
 REM Verify daemon is running
-curl -s http://127.0.0.1:5001/api/v0/version >nul 2>&1
+curl -s http://127.0.0.1:5001`${process.env.NEXT_PUBLIC_API_URL}/api/v0/version >nul 2>&1
 if %errorlevel% equ 0 (
     echo [SUCCESS] IPFS daemon is running!
     goto :verify_installation
@@ -276,7 +276,7 @@ if %errorlevel% neq 0 (
 REM Check daemon status
 echo.
 echo [TEST 2/3] Checking daemon status...
-curl -s http://127.0.0.1:5001/api/v0/version
+curl -s http://127.0.0.1:5001`${process.env.NEXT_PUBLIC_API_URL}/api/v0/version
 if %errorlevel% neq 0 (
     echo [ERROR] Daemon is not responding
     goto :error_exit

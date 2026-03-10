@@ -5,7 +5,7 @@
  * Tests all signup and login flows for all roles
  */
 
-const API_URL = 'http://localhost:5002/api/auth';
+const API_URL = 'http://localhost:5002`${process.env.NEXT_PUBLIC_API_URL}/api/auth';
 
 // Test data
 const adminCode = '123456789';

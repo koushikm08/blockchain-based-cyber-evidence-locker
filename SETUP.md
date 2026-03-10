@@ -259,16 +259,16 @@ kill -9 <PID>
 ## API Endpoints
 
 ### Authentication
-- `POST /api/auth/register` - Register new user
-- `POST /api/auth/signin` - Sign in
-- `GET /api/auth/me` - Get current user
+- `POST `${process.env.NEXT_PUBLIC_API_URL}/api/auth/register` - Register new user
+- `POST `${process.env.NEXT_PUBLIC_API_URL}/api/auth/signin` - Sign in
+- `GET `${process.env.NEXT_PUBLIC_API_URL}/api/auth/me` - Get current user
 
 ### Evidence
-- `POST /api/evidence/upload` - Upload evidence (admin, investigator)
-- `GET /api/evidence/verify/:evidenceId` - Verify evidence (admin, investigator, law_enforcement)
-- `GET /api/evidence/list` - List all evidence
-- `GET /api/evidence/:id` - Get evidence details
-- `GET /api/evidence/stats` - Get statistics
+- `POST `${process.env.NEXT_PUBLIC_API_URL}/api/evidence/upload` - Upload evidence (admin, investigator)
+- `GET `${process.env.NEXT_PUBLIC_API_URL}/api/evidence/verify/:evidenceId` - Verify evidence (admin, investigator, law_enforcement)
+- `GET `${process.env.NEXT_PUBLIC_API_URL}/api/evidence/list` - List all evidence
+- `GET `${process.env.NEXT_PUBLIC_API_URL}/api/evidence/:id` - Get evidence details
+- `GET `${process.env.NEXT_PUBLIC_API_URL}/api/evidence/stats` - Get statistics
 
 ## Security Notes
 

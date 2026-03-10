@@ -3,7 +3,7 @@ const path = require('path');
 const { ethers } = require('ethers');
 
 // Configuration
-const BASE_URL = 'http://localhost:5002/api';
+const BASE_URL = 'http://localhost:5002`${process.env.NEXT_PUBLIC_API_URL}/api';
 
 // Colors for console
 const colors = {

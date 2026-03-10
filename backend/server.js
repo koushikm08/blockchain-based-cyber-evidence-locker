@@ -21,24 +21,27 @@ app.use((req, res, next) => {
 });
 
 // Enable CORS
+const cors = require("cors");
+
 app.use(
   cors({
     origin: [
       "http://localhost:3000",
       "https://blockchain-based-cyber-evidence-locker.onrender.com"
     ],
+    methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true
   })
 ); 
 
 
 // Routes
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/evidence', require('./routes/evidence'));
-app.use('/api/admin', require('./routes/admin'));
+app.use('`${process.env.NEXT_PUBLIC_API_URL}/api/auth', require('./routes/auth'));
+app.use('`${process.env.NEXT_PUBLIC_API_URL}/api/evidence', require('./routes/evidence'));
+app.use('`${process.env.NEXT_PUBLIC_API_URL}/api/admin', require('./routes/admin'));
 
 // Health check
-app.get('/api/health', (req, res) => {
+app.get('`${process.env.NEXT_PUBLIC_API_URL}/api/health', (req, res) => {
   res.status(200).json({
     success: true,
     message: 'Cyber Evidence Locker API is running',
@@ -53,10 +56,10 @@ app.get('/', (req, res) => {
     message: 'Blockchain-based Cyber Evidence Locker API',
     version: '1.0.0',
     endpoints: {
-      auth: '/api/auth',
-      evidence: '/api/evidence',
-      admin: '/api/admin',
-      health: '/api/health'
+      auth: '`${process.env.NEXT_PUBLIC_API_URL}/api/auth',
+      evidence: '`${process.env.NEXT_PUBLIC_API_URL}/api/evidence',
+      admin: '`${process.env.NEXT_PUBLIC_API_URL}/api/admin',
+      health: '`${process.env.NEXT_PUBLIC_API_URL}/api/health'
     }
   });
 });

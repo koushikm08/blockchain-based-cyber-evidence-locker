@@ -9,7 +9,7 @@ async function uploadToIPFS(filePath) {
     data.append("file", fs.createReadStream(filePath));
 
     const response = await axios.post(
-        "https://api.pinata.cloud/pinning/pinFileToIPFS",
+        "https:/`${process.env.NEXT_PUBLIC_API_URL}/api.pinata.cloud/pinning/pinFileToIPFS",
         data,
         {
             maxBodyLength: "Infinity",
