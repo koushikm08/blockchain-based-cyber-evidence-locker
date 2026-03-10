@@ -280,9 +280,9 @@ exports.verifyEvidence = async (req, res, next) => {
         // 1. Verify IPFS and Hash
         let fetchedFileBuffer;
         try {
-            const { create } = await import('ipfs-http-client');
-            ipfs = create({ url: process.env.IPFS_URL || 'http://127.0.0.1:5001' });
-
+            const url = `https://gateway.pinata.cloud/ipfs/${evidence.ipfsCid}`;
+            const response = await axios.get(url, { responseType: 'arraybuffer' });
+            const fetchedFileBuffer = Buffer.from(response.data);
             console.log('🔍 Attempting to verify file from IPFS with CID:', evidence.ipfsCid);
 
             // Cat file from IPFS using raw CID
@@ -582,34 +582,29 @@ exports.downloadEvidence = async (req, res, next) => {
             });
         }
 
-        // Fetch from IPFS
-        let fileBuffer;
-        try {
-            const { create } = await import('ipfs-http-client');
-            ipfs = create({ url: process.env.IPFS_URL || 'http://127.0.0.1:5001' });
+        // Fetch from Pinata IPFS gateway
+let fileBuffer;
+try {
+    const url = `https://gateway.pinata.cloud/ipfs/${evidence.ipfsCid}`;
+    console.log('📥 Downloading file from Pinata with CID:', evidence.ipfsCid);
 
-            console.log('📥 Downloading file from IPFS with CID:', evidence.ipfsCid);
-            
-            const chunks = [];
-            for await (const chunk of ipfs.cat(evidence.ipfsCid)) {
-                chunks.push(chunk);
-            }
-            
-            if (chunks.length === 0) {
-                throw new Error('No data retrieved from IPFS - empty file');
-            }
-            
-            fileBuffer = Buffer.concat(chunks);
-            console.log('✓ File downloaded successfully from IPFS, size:', fileBuffer.length, 'bytes');
-        } catch (ipfsError) {
-            console.error("❌ IPFS Download failed:", ipfsError.message);
-            console.error("Error Details:", ipfsError);
-            res.setHeader('Content-Type', 'application/json');
-            return res.status(503).json({
-                success: false,
-                message: 'Failed to retrieve file from IPFS. The network may be down or the file may no longer be available.'
-            });
-        }
+    const response = await axios.get(url, { responseType: 'arraybuffer' });
+    fileBuffer = Buffer.from(response.data);
+
+    if (!fileBuffer || fileBuffer.length === 0) {
+        throw new Error('No data retrieved from IPFS - empty file');
+    }
+
+    console.log('✓ File downloaded successfully from Pinata, size:', fileBuffer.length, 'bytes');
+} catch (ipfsError) {
+    console.error("❌ Pinata IPFS download failed:", ipfsError.message);
+    res.setHeader('Content-Type', 'application/json');
+    return res.status(503).json({
+        success: false,
+        message: 'Failed to retrieve file from IPFS. The network may be down or the file may no longer be available.',
+        error: ipfsError.message
+    });
+}
 
         // Final integrity check before serving the file
         const currentHash = calculateFileHash(fileBuffer);
