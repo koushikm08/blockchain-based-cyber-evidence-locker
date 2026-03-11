@@ -1,15 +1,15 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
-import { Shield, Plus, Search, Eye, FileCheck, Loader2, Upload, ArrowLeft, LogOut } from 'lucide-react'
-import { useSearchParams } from 'next/navigation'
-import { Suspense } from 'react'
+import {
+  Shield, Search, Eye, FileCheck, Loader2, Upload,
+  LogOut, LayoutDashboard, CheckCircle2, Clock, AlertTriangle,
+  Database, ChevronRight, ArrowUpRight, RefreshCw, User, Settings
+} from 'lucide-react'
 import Loading from './loading'
 
 interface Evidence {
@@ -26,16 +26,18 @@ export default function DashboardPage() {
   const router = useRouter()
   const [userRole, setUserRole] = useState('')
   const [userName, setUserName] = useState('')
+  const [userOrg, setUserOrg] = useState('')
   const [evidenceList, setEvidenceList] = useState<Evidence[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [filteredEvidence, setFilteredEvidence] = useState<Evidence[]>([])
-  const searchParams = useSearchParams()
+  const [refreshing, setRefreshing] = useState(false)
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user') || '{}')
     setUserRole(user.role || '')
     setUserName(user.fullName || 'User')
+    setUserOrg(user.organization || '')
     fetchEvidence()
   }, [])
 
@@ -48,28 +50,22 @@ export default function DashboardPage() {
     setFilteredEvidence(filtered)
   }, [searchTerm, evidenceList])
 
-  const fetchEvidence = async () => {
+  const fetchEvidence = async (isRefresh = false) => {
     try {
-      setLoading(true)
+      if (isRefresh) setRefreshing(true)
+      else setLoading(true)
+
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/evidence/list`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
       })
-
-      if (!response.ok) {
-        console.error('Failed to fetch evidence')
-        setLoading(false)
-        return
-      }
-
+      if (!response.ok) { setLoading(false); setRefreshing(false); return }
       const data = await response.json()
       setEvidenceList(data.evidence || [])
     } catch (err) {
       console.error('Error fetching evidence:', err)
     } finally {
       setLoading(false)
+      setRefreshing(false)
     }
   }
 
@@ -78,244 +74,392 @@ export default function DashboardPage() {
     router.push('/')
   }
 
-  const getStatusBadge = (status: string) => {
+  const getRoleBadge = (role: string) => {
+    const map: Record<string, string> = {
+      investigator: 'bg-emerald-100 text-emerald-700 border-emerald-200',
+      law_enforcement: 'bg-blue-100 text-blue-700 border-blue-200',
+      admin: 'bg-violet-100 text-violet-700 border-violet-200',
+    }
+    const labels: Record<string, string> = {
+      investigator: 'Investigator',
+      law_enforcement: 'Law Enforcement',
+      admin: 'Administrator',
+    }
+    return (
+      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border ${map[role] || 'bg-gray-100 text-gray-600 border-gray-200'}`}>
+        {labels[role] || role}
+      </span>
+    )
+  }
+
+  const getStatusConfig = (status: string) => {
     switch (status) {
       case 'verified':
-        return <Badge className="bg-green-50 text-green-700 border-green-200 shadow-sm">✓ Verified</Badge>
+        return { label: 'Verified', icon: CheckCircle2, className: 'bg-emerald-50 text-emerald-700 border-emerald-200', dot: 'bg-emerald-500' }
       case 'compromised':
-        return <Badge className="bg-red-50 text-red-700 border-red-200 shadow-sm">✗ Compromised</Badge>
+        return { label: 'Compromised', icon: AlertTriangle, className: 'bg-red-50 text-red-700 border-red-200', dot: 'bg-red-500' }
       default:
-        return <Badge className="bg-amber-50 text-amber-700 border-amber-200 shadow-sm">⏳ Pending</Badge>
+        return { label: 'Pending', icon: Clock, className: 'bg-amber-50 text-amber-700 border-amber-200', dot: 'bg-amber-500' }
     }
   }
 
+  const stats = [
+    {
+      label: 'Total Evidence',
+      value: evidenceList.length,
+      icon: Database,
+      color: 'from-emerald-500 to-green-600',
+      bg: 'bg-emerald-50',
+      textColor: 'text-emerald-600',
+      desc: 'files stored',
+    },
+    {
+      label: 'Verified',
+      value: evidenceList.filter(e => e.status === 'verified').length,
+      icon: CheckCircle2,
+      color: 'from-blue-500 to-cyan-600',
+      bg: 'bg-blue-50',
+      textColor: 'text-blue-600',
+      desc: 'integrity confirmed',
+    },
+    {
+      label: 'Pending',
+      value: evidenceList.filter(e => e.status === 'pending').length,
+      icon: Clock,
+      color: 'from-amber-500 to-orange-600',
+      bg: 'bg-amber-50',
+      textColor: 'text-amber-600',
+      desc: 'awaiting verification',
+    },
+    {
+      label: 'Compromised',
+      value: evidenceList.filter(e => e.status === 'compromised').length,
+      icon: AlertTriangle,
+      color: 'from-red-500 to-rose-600',
+      bg: 'bg-red-50',
+      textColor: 'text-red-600',
+      desc: 'requires attention',
+    },
+  ]
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50">
-      {/* Header */}
-      <header className="sticky top-0 z-50 backdrop-blur-sm bg-white/90 border-b border-slate-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+    <div className="min-h-screen bg-gray-50">
+
+      {/* ── SIDEBAR (desktop) ── */}
+      <aside className="hidden lg:flex fixed left-0 top-0 bottom-0 w-64 bg-gray-950 flex-col z-40">
+        {/* Logo */}
+        <div className="p-6 border-b border-white/10">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-md">
-              <Shield className="w-6 h-6 text-white" />
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center shadow-lg shadow-emerald-900/50">
+              <Shield className="w-5 h-5 text-white" />
             </div>
             <div>
-              <div className="text-lg font-bold text-foreground">B-CEL</div>
-              <div className="text-xs text-muted-foreground">Cyber Evidence Locker</div>
+              <span className="text-base font-bold text-white">B-CEL</span>
+              <p className="text-xs text-gray-500">Evidence Locker</p>
             </div>
           </div>
-          
-          <nav className="hidden md:flex items-center gap-8">
-            {userRole === 'admin' && (
-              <Link href="/admin" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+        </div>
+
+        {/* Nav */}
+        <nav className="flex-1 p-4 space-y-1">
+          <div className="text-xs font-bold text-gray-600 uppercase tracking-wider px-3 mb-3">Navigation</div>
+
+          <Link href="/dashboard" className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white/10 text-white font-semibold text-sm">
+            <LayoutDashboard className="w-4 h-4 text-emerald-400" />
+            Dashboard
+          </Link>
+
+          {userRole !== 'law_enforcement' && (
+            <Link href="/upload" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white font-medium text-sm transition-all">
+              <Upload className="w-4 h-4" />
+              Upload Evidence
+            </Link>
+          )}
+
+          <Link href="/verify" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white font-medium text-sm transition-all">
+            <FileCheck className="w-4 h-4" />
+            Verify Evidence
+          </Link>
+
+          <Link href="/about" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white font-medium text-sm transition-all">
+            <Database className="w-4 h-4" />
+            About
+          </Link>
+
+          {userRole === 'admin' && (
+            <>
+              <div className="text-xs font-bold text-gray-600 uppercase tracking-wider px-3 mb-3 mt-6">Admin</div>
+              <Link href="/admin" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white font-medium text-sm transition-all">
+                <Settings className="w-4 h-4" />
                 Admin Panel
               </Link>
-            )}
-            {userRole !== 'law_enforcement' && (
-              <Link href="/upload" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-                Upload
-              </Link>
-            )}
-            <Link href="/verify" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-              Verify
-            </Link>
-            <Link href="/about" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-              About
-            </Link>
-          </nav>
+            </>
+          )}
+        </nav>
 
-          <Button 
-            size="sm" 
-            variant="outline" 
+        {/* User profile */}
+        <div className="p-4 border-t border-white/10">
+          <div className="flex items-center gap-3 px-3 py-3 rounded-xl bg-white/5 mb-2">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center flex-shrink-0">
+              <User className="w-4 h-4 text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-white truncate">{userName}</p>
+              <p className="text-xs text-gray-500 truncate">{userOrg}</p>
+            </div>
+          </div>
+          <button
             onClick={handleLogout}
-            className="border-slate-300 hover:bg-red-50 hover:text-red-700 hover:border-red-300"
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-400 hover:bg-red-500/10 hover:text-red-400 font-medium text-sm transition-all"
           >
-            <LogOut className="w-4 h-4 mr-2" />
+            <LogOut className="w-4 h-4" />
             Sign Out
-          </Button>
+          </button>
         </div>
-      </header>
+      </aside>
 
-      <main className="max-w-7xl mx-auto px-6 py-12">
-        {/* Back Button */}
-        <div className="mb-8 flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => window.history.back()}
-            className="gap-2 text-muted-foreground hover:text-foreground hover:bg-slate-100"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back
-          </Button>
-          <div className="text-sm text-muted-foreground">Dashboard / {userName}</div>
-        </div>
+      {/* ── MAIN CONTENT ── */}
+      <div className="lg:pl-64">
 
-        {/* Page Title */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-foreground mb-2">Your Evidence</h1>
-          <p className="text-muted-foreground">Monitor, manage, and verify all your stored digital evidence</p>
-        </div>
-
-        {/* Stats Cards */}
-        <div className="grid md:grid-cols-4 gap-4 mb-8">
-          <Card className="border-slate-200 hover:shadow-md transition-shadow">
-            <CardHeader className="pb-3">
-              <CardDescription className="text-muted-foreground">Total Evidence</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-green-600">{evidenceList.length}</div>
-              <p className="text-xs text-muted-foreground mt-1">files stored</p>
-            </CardContent>
-          </Card>
-
-          <Card className="border-slate-200 hover:shadow-md transition-shadow">
-            <CardHeader className="pb-3">
-              <CardDescription className="text-muted-foreground">Verified</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-emerald-600">
-                {evidenceList.filter((e) => e.status === 'verified').length}
+        {/* Top bar */}
+        <header className="sticky top-0 z-30 bg-white border-b border-gray-200 shadow-sm">
+          <div className="px-6 py-4 flex items-center justify-between">
+            {/* Mobile logo */}
+            <div className="flex items-center gap-3 lg:hidden">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center">
+                <Shield className="w-4 h-4 text-white" />
               </div>
-              <p className="text-xs text-muted-foreground mt-1">integrity confirmed</p>
-            </CardContent>
-          </Card>
+              <span className="font-bold text-gray-900">B-CEL</span>
+            </div>
 
-          <Card className="border-slate-200 hover:shadow-md transition-shadow">
-            <CardHeader className="pb-3">
-              <CardDescription className="text-muted-foreground">Pending</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-amber-600">
-                {evidenceList.filter((e) => e.status === 'pending').length}
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">awaiting verification</p>
-            </CardContent>
-          </Card>
+            {/* Page title (desktop) */}
+            <div className="hidden lg:block">
+              <h1 className="text-lg font-bold text-gray-900">Dashboard</h1>
+              <p className="text-xs text-gray-500">Welcome back, {userName}</p>
+            </div>
 
-          <Card className="border-slate-200 hover:shadow-md transition-shadow">
-            <CardHeader className="pb-3">
-              <CardDescription className="text-muted-foreground">Compromised</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-red-600">
-                {evidenceList.filter((e) => e.status === 'compromised').length}
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">requires attention</p>
-            </CardContent>
-          </Card>
-        </div>
+            {/* Right side */}
+            <div className="flex items-center gap-3">
+              {getRoleBadge(userRole)}
+              <button
+                onClick={handleLogout}
+                className="lg:hidden flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-red-600 transition-colors px-3 py-2 rounded-lg hover:bg-red-50"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </header>
 
-        {/* Action Buttons */}
-        <div className="flex gap-3 mb-8 flex-wrap">
-          {userRole !== 'law_enforcement' && (
-            <Button className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-md hover:shadow-lg transition-all">
-              <Link href="/upload" className="flex items-center gap-2">
-                <Upload className="w-4 h-4" />
-                Upload Evidence
+        <main className="p-6 lg:p-8 max-w-7xl mx-auto">
+
+          {/* Page header */}
+          <div className="mb-8 flex items-start justify-between gap-4">
+            <div>
+              <h2 className="text-2xl font-black text-gray-900 mb-1">Evidence Overview</h2>
+              <p className="text-gray-500 text-sm">Monitor and manage all stored digital evidence</p>
+            </div>
+            <div className="flex items-center gap-3 flex-shrink-0">
+              <button
+                onClick={() => fetchEvidence(true)}
+                disabled={refreshing}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl border-2 border-gray-200 hover:border-emerald-300 text-gray-600 hover:text-emerald-700 text-sm font-semibold transition-all hover:bg-emerald-50 disabled:opacity-50"
+              >
+                <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+                Refresh
+              </button>
+              {userRole !== 'law_enforcement' && (
+                <Link
+                  href="/upload"
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white text-sm font-bold shadow-md shadow-emerald-200 hover:shadow-lg transition-all hover:-translate-y-0.5"
+                >
+                  <Upload className="w-4 h-4" />
+                  Upload Evidence
+                </Link>
+              )}
+            </div>
+          </div>
+
+          {/* Stats Grid */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            {stats.map((stat) => {
+              const Icon = stat.icon
+              return (
+                <div key={stat.label} className="bg-white rounded-2xl border border-gray-100 p-5 hover:shadow-md hover:border-gray-200 transition-all duration-200 group">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform`}>
+                      <Icon className="w-5 h-5 text-white" />
+                    </div>
+                    <ArrowUpRight className="w-4 h-4 text-gray-300 group-hover:text-gray-400 transition-colors" />
+                  </div>
+                  <div className={`text-3xl font-black ${stat.textColor} mb-1`}>{stat.value}</div>
+                  <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{stat.label}</div>
+                  <div className="text-xs text-gray-400 mt-0.5">{stat.desc}</div>
+                </div>
+              )
+            })}
+          </div>
+
+          {/* Quick Actions */}
+          <div className="grid md:grid-cols-2 gap-4 mb-8">
+            {userRole !== 'law_enforcement' && (
+              <Link href="/upload" className="group flex items-center gap-4 bg-gradient-to-br from-emerald-500 to-green-600 rounded-2xl p-5 hover:from-emerald-600 hover:to-green-700 transition-all hover:shadow-xl hover:shadow-emerald-200 hover:-translate-y-0.5">
+                <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
+                  <Upload className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-white font-bold">Upload New Evidence</p>
+                  <p className="text-emerald-100 text-sm">Securely store a new file on blockchain</p>
+                </div>
+                <ChevronRight className="w-5 h-5 text-white/60 group-hover:translate-x-1 transition-transform" />
               </Link>
-            </Button>
-          )}
-          <Button variant="outline" className="border-slate-300 hover:bg-slate-50">
-            <Link href="/verify" className="flex items-center gap-2">
-              <FileCheck className="w-4 h-4" />
-              Verify Evidence
+            )}
+            <Link href="/verify" className="group flex items-center gap-4 bg-white border-2 border-gray-100 hover:border-emerald-200 rounded-2xl p-5 transition-all hover:shadow-md hover:-translate-y-0.5">
+              <div className="w-12 h-12 rounded-xl bg-emerald-50 flex items-center justify-center flex-shrink-0">
+                <FileCheck className="w-6 h-6 text-emerald-600" />
+              </div>
+              <div className="flex-1">
+                <p className="text-gray-900 font-bold">Verify Evidence</p>
+                <p className="text-gray-500 text-sm">Check integrity against blockchain record</p>
+              </div>
+              <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-emerald-500 group-hover:translate-x-1 transition-all" />
             </Link>
-          </Button>
-        </div>
+          </div>
 
-        {/* Search Bar */}
-        <Card className="border-slate-200 mb-8 shadow-sm">
-          <CardHeader>
-            <CardTitle className="text-lg">Search Evidence</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="relative">
-              <Search className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
-              <Input
-                type="text"
-                placeholder="Search by Evidence ID or file name..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 border-slate-300 focus-visible:ring-green-500 focus-visible:border-green-500"
-              />
+          {/* Evidence Table */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+            {/* Table header */}
+            <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between gap-4">
+              <div>
+                <h3 className="text-base font-bold text-gray-900">Evidence Records</h3>
+                <p className="text-xs text-gray-500 mt-0.5">{filteredEvidence.length} of {evidenceList.length} records</p>
+              </div>
+              <div className="relative w-64">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search evidence..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-9 pr-4 py-2 text-sm border-2 border-gray-200 rounded-xl focus:border-emerald-400 focus:outline-none bg-gray-50 focus:bg-white transition-all"
+                />
+              </div>
             </div>
-          </CardContent>
-        </Card>
 
-        {/* Evidence Table */}
-        <Suspense fallback={<Loading />}>
-          {loading ? (
-            <Card className="border-slate-200 shadow-sm">
-              <CardContent className="flex items-center justify-center py-12">
-                <Loader2 className="w-8 h-8 text-green-600 animate-spin mr-3" />
-                <span className="text-muted-foreground">Loading evidence...</span>
-              </CardContent>
-            </Card>
-          ) : filteredEvidence.length === 0 ? (
-            <Card className="border-slate-200 shadow-sm">
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <FileCheck className="w-12 h-12 text-slate-300 mb-4" />
-                <h3 className="text-lg font-semibold text-foreground mb-2">No Evidence Found</h3>
-                <p className="text-muted-foreground text-center mb-6 max-w-sm">
-                  {searchTerm
-                    ? 'No evidence matches your search. Try a different query.'
-                    : 'You haven\'t uploaded any evidence yet. Start by uploading your first piece of digital evidence.'}
-                </p>
-                {!searchTerm && userRole !== 'law_enforcement' && (
-                  <Button className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white">
-                    <Link href="/upload">Upload Your First Evidence</Link>
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="overflow-x-auto border border-slate-200 rounded-lg shadow-sm bg-white">
-              <table className="w-full">
-                <thead className="bg-gradient-to-r from-slate-50 to-slate-100 border-b border-slate-200">
-                  <tr>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Evidence ID</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">File Name</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Status</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Timestamp</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-200">
-                  {filteredEvidence.map((evidence) => (
-                    <tr key={evidence.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="px-6 py-4 text-sm font-mono text-green-600">{evidence.evidenceId}</td>
-                      <td className="px-6 py-4 text-sm text-foreground max-w-xs truncate">{evidence.fileName}</td>
-                      <td className="px-6 py-4 text-sm">{getStatusBadge(evidence.status)}</td>
-                      <td className="px-6 py-4 text-sm text-muted-foreground">{new Date(evidence.timestamp).toLocaleDateString()}</td>
-                      <td className="px-6 py-4 text-sm">
-                        <div className="flex gap-2">
-                          <Link href={`/verify?id=${evidence.evidenceId}`}>
-                            <Button size="sm" variant="outline" className="border-slate-300 text-green-600 hover:bg-green-50 hover:border-green-300">
-                              <Eye className="w-4 h-4 mr-1" />
-                              View
-                            </Button>
-                          </Link>
-                          <Link href={`/verify?id=${evidence.evidenceId}`}>
-                            <Button size="sm" className="bg-gradient-to-r from-green-50 to-emerald-50 text-green-700 hover:from-green-100 hover:to-emerald-100 border border-green-200">
-                              <FileCheck className="w-4 h-4 mr-1" />
-                              Verify
-                            </Button>
-                          </Link>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </Suspense>
+            <Suspense fallback={<Loading />}>
+              {loading ? (
+                <div className="flex flex-col items-center justify-center py-20 gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center">
+                    <Loader2 className="w-6 h-6 text-emerald-600 animate-spin" />
+                  </div>
+                  <p className="text-gray-500 text-sm font-medium">Loading evidence records...</p>
+                </div>
+              ) : filteredEvidence.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-20 gap-4">
+                  <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center">
+                    <Database className="w-8 h-8 text-gray-300" />
+                  </div>
+                  <div className="text-center">
+                    <h4 className="text-base font-bold text-gray-900 mb-1">
+                      {searchTerm ? 'No results found' : 'No evidence yet'}
+                    </h4>
+                    <p className="text-gray-500 text-sm max-w-xs">
+                      {searchTerm
+                        ? `No evidence matches "${searchTerm}". Try a different search.`
+                        : 'Start by uploading your first piece of digital evidence to the blockchain.'}
+                    </p>
+                  </div>
+                  {!searchTerm && userRole !== 'law_enforcement' && (
+                    <Link
+                      href="/upload"
+                      className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-green-600 text-white text-sm font-bold shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5 mt-2"
+                    >
+                      <Upload className="w-4 h-4" />
+                      Upload First Evidence
+                    </Link>
+                  )}
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="bg-gray-50 border-b border-gray-100">
+                        <th className="px-6 py-3.5 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Evidence ID</th>
+                        <th className="px-6 py-3.5 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">File Name</th>
+                        <th className="px-6 py-3.5 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
+                        <th className="px-6 py-3.5 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Date</th>
+                        <th className="px-6 py-3.5 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-50">
+                      {filteredEvidence.map((evidence) => {
+                        const statusConfig = getStatusConfig(evidence.status)
+                        const StatusIcon = statusConfig.icon
+                        return (
+                          <tr key={evidence.id} className="hover:bg-gray-50/80 transition-colors group">
+                            <td className="px-6 py-4">
+                              <span className="text-xs font-mono font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg">
+                                {evidence.evidenceId}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="flex items-center gap-2">
+                                <div className="w-7 h-7 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
+                                  <Database className="w-3.5 h-3.5 text-gray-400" />
+                                </div>
+                                <span className="text-sm font-medium text-gray-900 max-w-[200px] truncate">
+                                  {evidence.fileName}
+                                </span>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4">
+                              <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border ${statusConfig.className}`}>
+                                <span className={`w-1.5 h-1.5 rounded-full ${statusConfig.dot}`} />
+                                {statusConfig.label}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4">
+                              <span className="text-sm text-gray-500">
+                                {new Date(evidence.timestamp).toLocaleDateString('en-US', {
+                                  month: 'short', day: 'numeric', year: 'numeric'
+                                })}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="flex items-center gap-2">
+                                <Link href={`/verify?id=${evidence.evidenceId}`}>
+                                  <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 hover:border-emerald-300 text-gray-600 hover:text-emerald-700 text-xs font-semibold transition-all hover:bg-emerald-50">
+                                    <Eye className="w-3.5 h-3.5" />
+                                    View
+                                  </button>
+                                </Link>
+                                <Link href={`/verify?id=${evidence.evidenceId}`}>
+                                  <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-semibold transition-all shadow-sm">
+                                    <FileCheck className="w-3.5 h-3.5" />
+                                    Verify
+                                  </button>
+                                </Link>
+                              </div>
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </Suspense>
+          </div>
 
-        {/* Footer */}
-        <div className="mt-12 text-center text-sm text-muted-foreground">
-          <p>B-CEL Dashboard • Blockchain-Based Cyber Evidence Locker • <span className="text-green-600">v1.0</span></p>
-        </div>
-      </main>
+          {/* Footer */}
+          <div className="mt-8 text-center">
+            <p className="text-xs text-gray-400">
+              B-CEL Dashboard • Blockchain-Based Cyber Evidence Locker •{' '}
+              <span className="text-emerald-500 font-semibold">v1.0</span>
+            </p>
+          </div>
+        </main>
+      </div>
     </div>
   )
 }

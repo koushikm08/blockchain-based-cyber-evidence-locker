@@ -3,9 +3,8 @@
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Mail, Lock, Eye, EyeOff, AlertCircle, CheckCircle2, Shield, Badge, Users } from 'lucide-react'
+import { Mail, Lock, Eye, EyeOff, AlertCircle, CheckCircle2, Shield, ArrowRight, ChevronLeft, Fingerprint, Users, BadgeCheck } from 'lucide-react'
 import { validateEmail, extractResponseError } from '@/lib/validation'
 
 interface UserData {
@@ -19,21 +18,36 @@ interface UserData {
 const roleConfig = {
   investigator: {
     label: 'Investigator',
-    description: 'Upload & verify evidence',
-    icon: Badge,
-    permissions: ['Upload evidence', 'Verify files', 'Access dashboard'],
+    description: 'Upload & manage evidence',
+    icon: Fingerprint,
+    color: 'from-emerald-500 to-green-600',
+    selectedBg: 'bg-gradient-to-br from-emerald-500 to-green-600',
+    ringColor: 'ring-emerald-500',
+    textColor: 'text-emerald-600',
+    lightBg: 'bg-emerald-50',
+    borderColor: 'border-emerald-500',
   },
   law_enforcement: {
     label: 'Law Enforcement',
     description: 'View & verify evidence',
     icon: Users,
-    permissions: ['View evidence', 'Verify files', 'Generate reports'],
+    color: 'from-blue-500 to-cyan-600',
+    selectedBg: 'bg-gradient-to-br from-blue-500 to-cyan-600',
+    ringColor: 'ring-blue-500',
+    textColor: 'text-blue-600',
+    lightBg: 'bg-blue-50',
+    borderColor: 'border-blue-500',
   },
   admin: {
     label: 'Administrator',
     description: 'Full system access',
-    icon: Shield,
-    permissions: ['Full system access', 'Manage users', 'System settings'],
+    icon: BadgeCheck,
+    color: 'from-violet-500 to-purple-600',
+    selectedBg: 'bg-gradient-to-br from-violet-500 to-purple-600',
+    ringColor: 'ring-violet-500',
+    textColor: 'text-violet-600',
+    lightBg: 'bg-violet-50',
+    borderColor: 'border-violet-500',
   },
 }
 
@@ -46,13 +60,9 @@ export default function SignIn() {
   const [showPassword, setShowPassword] = useState(false)
   const [userData, setUserData] = useState<UserData | null>(null)
   const [selectedRole, setSelectedRole] = useState<string>('investigator')
-  const [formData, setFormData] = useState({
-    email: '',
-    password: ''
-  })
+  const [formData, setFormData] = useState({ email: '', password: '' })
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
 
-  // Ensure component only renders after hydration
   useEffect(() => {
     setMounted(true)
   }, [])
@@ -67,10 +77,7 @@ export default function SignIn() {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
     setError('')
-
-    // Real-time validation - properly clear errors when valid
     const newErrors = { ...validationErrors }
-    
     if (name === 'email') {
       const emailError = validateEmail(value)
       if (emailError) newErrors.email = emailError
@@ -81,7 +88,6 @@ export default function SignIn() {
       if (passwordError) newErrors.password = passwordError
       else delete newErrors.password
     }
-    
     setValidationErrors(newErrors)
   }
 
@@ -95,11 +101,9 @@ export default function SignIn() {
     setError('')
     setLoading(true)
 
-    // Validate all fields
     const errors: Record<string, string> = {}
     const emailError = validateEmail(formData.email)
     const passwordError = validatePassword(formData.password)
-    
     if (emailError) errors.email = emailError
     if (passwordError) errors.password = passwordError
 
@@ -115,7 +119,8 @@ export default function SignIn() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: formData.email,
-          password: formData.password
+          password: formData.password,
+          role: selectedRole
         })
       })
 
@@ -128,10 +133,8 @@ export default function SignIn() {
         return
       }
 
-      // Save token and user data
       localStorage.setItem('token', data.token)
       localStorage.setItem('user', JSON.stringify(data.user))
-
       setUserData(data.user)
       setSuccess(true)
       setTimeout(() => {
@@ -140,214 +143,309 @@ export default function SignIn() {
         } else {
           router.push('/dashboard')
         }
-      }, 2500)
+      }, 2000)
     } catch (err) {
       setError('Network error. Please try again.')
       setLoading(false)
     }
   }
 
-  const selectedRoleData = roleConfig[selectedRole as keyof typeof roleConfig]
-  const userRoleData = userData ? roleConfig[userData.role as keyof typeof roleConfig] : null
+  const currentRole = roleConfig[selectedRole as keyof typeof roleConfig]
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4 py-8">
-      <div className="w-full max-w-xl">
-        {/* Logo / Header */}
-        <div className="text-center mb-10">
-          <div className="flex items-center justify-center gap-3 mb-6">
-            <div className="p-3.5 bg-foreground rounded-lg">
-              <Shield className="w-7 h-7 bg-background" />
+    <div className="min-h-screen bg-gray-950 flex overflow-hidden">
+
+      {/* ── LEFT PANEL (decorative) ── */}
+      <div className="hidden lg:flex lg:w-1/2 relative flex-col justify-between p-12 overflow-hidden">
+        {/* Background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff06_1px,transparent_1px),linear-gradient(to_bottom,#ffffff06_1px,transparent_1px)] bg-[size:3rem_3rem]" />
+
+        {/* Glowing orbs */}
+        <div className="absolute top-1/4 left-1/4 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-green-500/10 rounded-full blur-3xl" />
+
+        {/* Top: Logo */}
+        <div className="relative">
+          <Link href="/" className="flex items-center gap-3 group">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center shadow-lg shadow-emerald-900/50 group-hover:scale-105 transition-transform">
+              <Shield className="w-5 h-5 text-white" />
             </div>
-            <h1 className="text-4xl font-bold text-foreground tracking-tight">B-CEL</h1>
-          </div>
-          <h2 className="text-3xl font-bold text-foreground mb-3">Authentication</h2>
-          <p className="text-base text-muted-foreground">Sign in to your evidence management system</p>
+            <span className="text-xl font-bold text-white">B-CEL</span>
+          </Link>
         </div>
 
-        {!mounted ? (
-          <div className="bg-card border border-border rounded-2xl p-8 shadow-2xl h-96 flex items-center justify-center">
-            <div className="text-center">
-              <div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin mx-auto mb-4"></div>
-              <p className="text-muted-foreground">Loading...</p>
+        {/* Middle: Feature highlights */}
+        <div className="relative space-y-6">
+          <div>
+            <h2 className="text-4xl font-black text-white mb-3 leading-tight">
+              Secure evidence.<br />
+              <span className="bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
+                Immutable records.
+              </span>
+            </h2>
+            <p className="text-gray-400 text-lg leading-relaxed">
+              Sign in to access the blockchain-secured evidence management platform.
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            {[
+              { icon: '🔐', text: 'SHA-256 cryptographic integrity on every file' },
+              { icon: '⛓️', text: 'Immutable records on Ethereum blockchain' },
+              { icon: '🌐', text: 'Decentralized IPFS storage — no single point of failure' },
+              { icon: '✅', text: 'Court-admissible chain of custody documentation' },
+            ].map((item) => (
+              <div key={item.text} className="flex items-start gap-3">
+                <span className="text-xl leading-none mt-0.5">{item.icon}</span>
+                <p className="text-gray-400 text-sm leading-relaxed">{item.text}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Bottom: Status */}
+        <div className="relative">
+          <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-2xl px-5 py-4">
+            <div className="relative">
+              <div className="w-3 h-3 bg-emerald-500 rounded-full" />
+              <div className="absolute inset-0 w-3 h-3 bg-emerald-500 rounded-full animate-ping opacity-50" />
+            </div>
+            <div>
+              <p className="text-white text-sm font-semibold">All systems operational</p>
+              <p className="text-gray-500 text-xs">Blockchain network • IPFS • API</p>
             </div>
           </div>
-        ) : (
-          <>
-            {/* Alert Messages */}
-            {success && userData && (
-              <div className="mb-6 p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
-                <div className="flex items-start gap-3 mb-3">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-500 mt-0.5 shrink-0" />
-                  <p className="text-sm text-emerald-200">Login successful!</p>
-                </div>
-                {/* Role Information */}
-                <div className="p-3 border border-border bg-secondary/50 rounded-lg">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-xs font-semibold text-primary">
-                      {userRoleData?.label}
-                    </span>
+        </div>
+      </div>
+
+      {/* ── RIGHT PANEL (form) ── */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 lg:p-12 bg-white relative">
+        {/* Subtle top decoration */}
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500" />
+
+        <div className="w-full max-w-md">
+
+          {/* Mobile logo */}
+          <div className="lg:hidden flex items-center gap-3 mb-8">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center">
+              <Shield className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-xl font-bold text-gray-900">B-CEL</span>
+          </div>
+
+          {/* Back link */}
+          <Link href="/" className="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-700 transition-colors mb-8 group">
+            <ChevronLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
+            Back to home
+          </Link>
+
+          {/* Header */}
+          <div className="mb-8">
+            <h1 className="text-3xl font-black text-gray-900 mb-2">Welcome back</h1>
+            <p className="text-gray-500">Sign in to your evidence management account</p>
+          </div>
+
+          {!mounted ? (
+            <div className="space-y-4">
+              {[1, 2, 3].map(i => (
+                <div key={i} className="h-14 bg-gray-100 rounded-2xl shimmer" />
+              ))}
+            </div>
+          ) : (
+            <>
+              {/* Success state */}
+              {success && userData && (
+                <div className="mb-6 p-5 bg-emerald-50 border border-emerald-200 rounded-2xl animate-scale-in">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0">
+                      <CheckCircle2 className="w-4 h-4 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-emerald-800">Signed in successfully!</p>
+                      <p className="text-xs text-emerald-600">{userData.fullName} • {userData.organization}</p>
+                    </div>
                   </div>
-                  <p className="text-xs text-muted-foreground">{userData.fullName} • {userData.organization}</p>
-                  <p className="text-xs text-muted-foreground mt-1">{userRoleData?.description}</p>
+                  <div className="flex items-center gap-2 mt-3">
+                    <div className="w-4 h-4 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin" />
+                    <p className="text-xs text-emerald-600 font-medium">Redirecting to dashboard...</p>
+                  </div>
                 </div>
-                <p className="text-xs text-emerald-200 mt-3">Redirecting to your dashboard...</p>
-              </div>
-            )}
+              )}
 
-            {error && (
-              <div className="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded-lg flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-destructive mt-0.5 shrink-0" />
-                <p className="text-sm text-destructive/80">{error}</p>
-              </div>
-            )}
+              {/* Error state */}
+              {error && (
+                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-2xl flex items-start gap-3 animate-fade-in">
+                  <AlertCircle className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
+                  <p className="text-sm text-red-700 font-medium">{error}</p>
+                </div>
+              )}
 
-            {/* Form Card */}
-            <div className="bg-card border border-border rounded-2xl p-8 shadow-2xl">
               <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Role Selection */}
-            <div>
-              <label className="block text-base font-bold text-foreground mb-5">Select Your Role</label>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {Object.entries(roleConfig).map(([roleKey, roleData]) => {
-                  const IconComponent = roleData.icon
-                  const isSelected = selectedRole === roleKey
-                  return (
-                    <button
-                      key={roleKey}
-                      type="button"
-                      onClick={() => handleRoleChange(roleKey)}
-                      disabled={loading}
-                      className={`p-5 rounded-xl transition-all duration-200 border-2 ${
-                        isSelected
-                          ? 'bg-primary text-primary-foreground border-primary shadow-xl scale-105'
-                          : 'bg-secondary/40 border-border hover:bg-secondary hover:border-primary/50 text-foreground'
-                      } disabled:opacity-50 disabled:cursor-not-allowed flex flex-col items-center gap-3 text-center group`}
-                    >
-                      <IconComponent className={`w-8 h-8 ${isSelected ? 'text-primary-foreground' : 'text-muted-foreground group-hover:text-foreground'}`} />
-                      <span className={`text-sm font-bold tracking-tight`}>
-                        {roleData.label}
-                      </span>
-                    </button>
-                  )
-                })}
-              </div>
 
-              {/* Role Description */}
-              <div className="mt-5 p-5 bg-secondary/40 border border-border rounded-xl">
-                <div className="flex items-start gap-3 mb-4">
-                  {React.createElement(roleConfig[selectedRole as keyof typeof roleConfig].icon as any, {
-                    className: 'w-6 h-6 text-primary mt-0.5 flex-shrink-0'
-                  })}
-                  <div>
-                    <p className="text-base font-bold text-foreground">{roleConfig[selectedRole as keyof typeof roleConfig].label}</p>
-                    <p className="text-sm text-muted-foreground mt-1">{roleConfig[selectedRole as keyof typeof roleConfig].description}</p>
+                {/* Role Selection */}
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-3">
+                    Sign in as
+                  </label>
+                  <div className="grid grid-cols-3 gap-2 p-1.5 bg-gray-100 rounded-2xl">
+                    {Object.entries(roleConfig).map(([roleKey, roleData]) => {
+                      const Icon = roleData.icon
+                      const isSelected = selectedRole === roleKey
+                      return (
+                        <button
+                          key={roleKey}
+                          type="button"
+                          onClick={() => handleRoleChange(roleKey)}
+                          disabled={loading}
+                          className={`relative flex flex-col items-center gap-1.5 py-3 px-2 rounded-xl text-center transition-all duration-200 ${
+                            isSelected
+                              ? 'bg-white shadow-md shadow-gray-200'
+                              : 'hover:bg-white/60'
+                          } disabled:opacity-50 disabled:cursor-not-allowed`}
+                        >
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200 ${
+                            isSelected
+                              ? `bg-gradient-to-br ${roleData.color} shadow-sm`
+                              : 'bg-gray-200'
+                          }`}>
+                            <Icon className={`w-4 h-4 ${isSelected ? 'text-white' : 'text-gray-500'}`} />
+                          </div>
+                          <span className={`text-xs font-bold leading-tight transition-colors ${
+                            isSelected ? 'text-gray-900' : 'text-gray-500'
+                          }`}>
+                            {roleData.label}
+                          </span>
+                        </button>
+                      )
+                    })}
+                  </div>
+
+                  {/* Role description pill */}
+                  <div className={`mt-3 flex items-center gap-2 px-4 py-2.5 rounded-xl ${currentRole.lightBg} border border-current/10`}>
+                    <div className={`w-1.5 h-1.5 rounded-full bg-gradient-to-br ${currentRole.color}`} />
+                    <p className={`text-xs font-semibold ${currentRole.textColor}`}>
+                      {currentRole.label}: {currentRole.description}
+                    </p>
                   </div>
                 </div>
-                <div className="space-y-2 pl-9">
-                  {roleConfig[selectedRole as keyof typeof roleConfig].permissions?.map((perm) => (
-                    <p key={perm} className="text-sm text-muted-foreground flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 bg-primary rounded-full shrink-0"></span>
-                      {perm}
+
+                {/* Email */}
+                <div>
+                  <label htmlFor="email" className="block text-sm font-bold text-gray-700 mb-2">
+                    Email address
+                  </label>
+                  <div className="relative">
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <Input
+                      id="email"
+                      name="email"
+                      type="email"
+                      placeholder="you@organization.com"
+                      value={formData.email}
+                      onChange={handleChange}
+                      disabled={loading}
+                      className={`pl-11 h-12 rounded-xl border-2 bg-gray-50 text-gray-900 placeholder:text-gray-400 text-sm font-medium transition-all duration-200 focus-visible:ring-0 ${
+                        validationErrors.email
+                          ? 'border-red-300 bg-red-50 focus:border-red-400'
+                          : 'border-gray-200 focus:border-emerald-500 focus:bg-white'
+                      }`}
+                    />
+                  </div>
+                  {validationErrors.email && (
+                    <p className="text-xs text-red-600 mt-1.5 font-medium flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3" />
+                      {validationErrors.email}
                     </p>
-                  ))}
+                  )}
                 </div>
-              </div>
-            </div>
 
-            {/* Email Input */}
-            <div className="mt-8">
-              <label htmlFor="email" className="block text-base font-bold text-foreground mb-3">
-                Email Address
-              </label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-3.5 w-5 h-5 text-muted-foreground" />
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder="your@email.com"
-                  value={formData.email}
-                  onChange={handleChange}
-                  disabled={loading}
-                  className={`bg-secondary/50 border rounded-xl px-4 py-3.5 pl-12 text-base text-foreground placeholder:text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:border-transparent transition w-full ${
-                    validationErrors.email
-                      ? 'border-destructive/50 focus:ring-destructive'
-                      : 'border-border focus:ring-primary'
-                  }`}
-                />
-              </div>
-              {validationErrors.email && (
-                <p className="text-sm text-destructive mt-2 font-medium">{validationErrors.email}</p>
-              )}
-            </div>
+                {/* Password */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <label htmlFor="password" className="block text-sm font-bold text-gray-700">
+                      Password
+                    </label>
+                  </div>
+                  <div className="relative">
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <Input
+                      id="password"
+                      name="password"
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder="••••••••"
+                      value={formData.password}
+                      onChange={handleChange}
+                      disabled={loading}
+                      className={`pl-11 pr-12 h-12 rounded-xl border-2 bg-gray-50 text-gray-900 placeholder:text-gray-400 text-sm font-medium transition-all duration-200 focus-visible:ring-0 ${
+                        validationErrors.password
+                          ? 'border-red-300 bg-red-50 focus:border-red-400'
+                          : 'border-gray-200 focus:border-emerald-500 focus:bg-white'
+                      }`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                  {validationErrors.password && (
+                    <p className="text-xs text-red-600 mt-1.5 font-medium flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3" />
+                      {validationErrors.password}
+                    </p>
+                  )}
+                </div>
 
-            {/* Password Input */}
-            <div>
-              <label htmlFor="password" className="block text-base font-bold text-foreground mb-3">
-                Password
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-3.5 w-5 h-5 text-muted-foreground" />
-                <Input
-                  id="password"
-                  name="password"
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="••••••••"
-                  value={formData.password}
-                  onChange={handleChange}
-                  disabled={loading}
-                  className={`bg-secondary/50 border rounded-xl px-4 py-3.5 pl-12 pr-12 text-base text-foreground placeholder:text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:border-transparent transition w-full ${
-                    validationErrors.password
-                      ? 'border-destructive/50 focus:ring-destructive'
-                      : 'border-border focus:ring-primary'
-                  }`}
-                />
+                {/* Submit Button */}
                 <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-4 text-muted-foreground hover:text-foreground transition"
+                  type="submit"
+                  disabled={loading || Object.keys(validationErrors).length > 0 || !formData.email || !formData.password}
+                  className={`w-full h-13 py-3.5 rounded-xl font-bold text-sm text-white transition-all duration-200 flex items-center justify-center gap-2 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none group
+                    bg-gradient-to-r ${currentRole.color} hover:opacity-90 hover:-translate-y-0.5 hover:shadow-xl active:translate-y-0`}
                 >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  {loading ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Signing in...
+                    </>
+                  ) : (
+                    <>
+                      Sign in as {currentRole.label}
+                      <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                    </>
+                  )}
                 </button>
-              </div>
-              {validationErrors.password && (
-                <p className="text-sm text-destructive mt-2 font-medium">{validationErrors.password}</p>
-              )}
-            </div>
 
-            {/* Sign In Button */}
-            <Button
-              type="submit"
-              disabled={loading || Object.keys(validationErrors).length > 0 || !formData.email || !formData.password}
-              className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-bold text-base py-3.5 rounded-xl transition-all shadow-lg mt-10 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? (
-                <span className="flex items-center gap-2 text-base">
-                  <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin"></div>
-                  Signing In...
-                </span>
-              ) : (
-                `Sign In as ${roleConfig[selectedRole as keyof typeof roleConfig].label}`
-              )}
-            </Button>
+                {/* Divider */}
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-200" />
+                  </div>
+                  <div className="relative flex justify-center">
+                    <span className="bg-white px-4 text-xs text-gray-400 font-medium">Don't have an account?</span>
+                  </div>
+                </div>
 
-            {/* Sign Up Link */}
-            <p className="text-center text-base text-muted-foreground mt-8">
-              Don't have an account?{' '}
-              <Link href="/register" className="text-foreground font-bold hover:text-primary transition">
-                Create Account
-              </Link>
-            </p>
+                {/* Register link */}
+                <Link
+                  href="/register"
+                  className="w-full h-12 rounded-xl border-2 border-gray-200 hover:border-emerald-300 text-gray-700 hover:text-emerald-700 font-bold text-sm transition-all duration-200 flex items-center justify-center gap-2 hover:bg-emerald-50"
+                >
+                  Create an account
+                </Link>
               </form>
-            </div>
 
-            {/* Footer */}
-            <p className="text-center text-sm text-muted-foreground mt-10 font-medium">
-              Secured by blockchain technology • Enterprise-grade encryption
-            </p>
-          </>
-        )}
+              {/* Footer note */}
+              <p className="text-center text-xs text-gray-400 mt-8">
+                Protected by blockchain technology •{' '}
+                <span className="text-emerald-600 font-medium">Enterprise-grade security</span>
+              </p>
+            </>
+          )}
+        </div>
       </div>
     </div>
   )

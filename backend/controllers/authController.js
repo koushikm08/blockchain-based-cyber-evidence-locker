@@ -84,7 +84,7 @@ exports.register = async (req, res) => {
 // Login
 exports.login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, role } = req.body;
 
     // Validate inputs
     if (!email || !password) {
@@ -94,13 +94,28 @@ exports.login = async (req, res) => {
     const emailValidation = validateEmail(email);
     if (!emailValidation.valid) return res.status(400).json({ message: emailValidation.message });
 
-    // Find user
-    const user = await User.findOne({ email: email.toLowerCase() }).select('+password');
-    if (!user) {
-      return res.status(401).json({ message: 'Invalid email or password' });
+    // Validate that a role was provided and is a valid role
+    const validRoles = ['investigator', 'law_enforcement', 'admin'];
+    if (!role || !validRoles.includes(role)) {
+      return res.status(400).json({ message: 'A valid role must be selected to sign in' });
     }
 
-    // Validate password
+    // Step 1: Find user by BOTH email AND role — role is checked first
+    const user = await User.findOne({
+      email: email.toLowerCase(),
+      role: role
+    }).select('+password');
+
+    // If no user found with that email+role combination, deny access.
+    // We use a generic message to avoid leaking whether the email exists.
+    if (!user) {
+      res.setHeader('Content-Type', 'application/json');
+      return res.status(401).json({
+        message: `No ${role.replace('_', ' ')} account found with this email. Please check your role selection or credentials.`
+      });
+    }
+
+    // Step 2: Only after confirming the role matches, validate the password
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       res.setHeader('Content-Type', 'application/json');
