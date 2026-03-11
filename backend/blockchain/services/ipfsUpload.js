@@ -4,12 +4,11 @@ const fs = require("fs");
 require("dotenv").config();
 
 async function uploadToIPFS(filePath) {
-
     const data = new FormData();
     data.append("file", fs.createReadStream(filePath));
 
     const response = await axios.post(
-        "https:/`${process.env.NEXT_PUBLIC_API_URL}/api.pinata.cloud/pinning/pinFileToIPFS",
+        "https://api.pinata.cloud/pinning/pinFileToIPFS",
         data,
         {
             maxBodyLength: "Infinity",
