@@ -18,7 +18,7 @@ const allowedOrigins = [
   "http://localhost:3000",
   "http://localhost:3001",
   "https://blockchain-based-cyber-evidence-locker.onrender.com",
-  "https://bcel.vercel.app",
+  "https://b-cel.vercel.app",
   process.env.FRONTEND_URL
 ].filter(Boolean);
 
