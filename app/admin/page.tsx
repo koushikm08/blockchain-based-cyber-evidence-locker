@@ -39,7 +39,7 @@ export default function AdminDashboardPage() {
     const fetchUsers = async () => {
         try {
             setLoading(true)
-            const response = await fetch('`${process.env.NEXT_PUBLIC_API_URL}/api/admin/users', {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/users`, {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`,
                 },

@@ -54,7 +54,7 @@ export function ApiErrorExample() {
   const handleSubmit = async (formData: any) => {
     setLoading(true)
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/data', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/data`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
@@ -104,7 +104,7 @@ export function PasswordStrengthExample() {
     // ✅ We extract and render only the valid boolean and errors array
     // Never render the entire result object
     if (!result.valid && result.errors.length > 0) {
-      setError(`Password needs: ${result.errors.join(', ')}`)
+      setError('Password needs: ' + result.errors.join(', '))
     } else {
       setError('')
     }
@@ -142,7 +142,7 @@ export function FormWithMultipleFieldsExample() {
     const passwordResult = validatePasswordStrength(data.password)
     if (!passwordResult.valid) {
       // ✅ Extract message from result, don't assign entire object
-      newErrors.password = `Password must include: ${passwordResult.errors.join(', ')}`
+      newErrors.password = 'Password must include: ' + passwordResult.errors.join(', ')
     }
 
     setErrors(newErrors)
