@@ -83,7 +83,7 @@
 
 // ❌ PROBLEM 3: Not extracting error strings from responses
 //    
-//    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/data')
+//    const response = await fetch('`${process.env.NEXT_PUBLIC_API_URL}/api/data')
 //    const data = await response.json()
 //    setError(data)  // Could be any structure
 
@@ -166,7 +166,7 @@ USE IN COMPONENTS:
 
 2. API Errors:
    
-   const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/data')
+   const response = await fetch('`${process.env.NEXT_PUBLIC_API_URL}/api/data')
    const data = await response.json()
    
    if (!response.ok) {
@@ -273,7 +273,7 @@ export default function LoginForm() {
   
   const handleSubmit = async (formData) => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/login', {
+      const response = await fetch('`${process.env.NEXT_PUBLIC_API_URL}/api/login', {
         method: 'POST',
         body: JSON.stringify(formData)
       })
@@ -310,7 +310,7 @@ export default function LoginForm() {
   
   const handleSubmit = async (formData) => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/login', {
+      const response = await fetch('`${process.env.NEXT_PUBLIC_API_URL}/api/login', {
         method: 'POST',
         body: JSON.stringify(formData)
       })

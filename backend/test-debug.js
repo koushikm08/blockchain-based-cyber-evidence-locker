@@ -39,7 +39,7 @@ function testSignup() {
     const options = {
       hostname: 'localhost',
       port: 5002,
-      path: `${process.env.NEXT_PUBLIC_API_URL}/api/auth/register',
+      path: '`${process.env.NEXT_PUBLIC_API_URL}/api/auth/register',
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -80,7 +80,7 @@ async function testLogin(email, password) {
     const options = {
       hostname: 'localhost',
       port: 5002,
-      path: `${process.env.NEXT_PUBLIC_API_URL}/api/auth/login',
+      path: '`${process.env.NEXT_PUBLIC_API_URL}/api/auth/login',
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
